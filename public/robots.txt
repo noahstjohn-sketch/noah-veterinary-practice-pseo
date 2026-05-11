@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://veterinary-practice.noahstjohn.com/sitemap-index.xml

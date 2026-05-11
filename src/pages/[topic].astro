@@ -1,0 +1,81 @@
+---
+// src/pages/[topic].astro
+// Static mode: prerenders one page per topic (atomic + longtail).
+// Routes by topic.template:
+//   "comparison" -> ComparisonTemplate (vs/longtail topics)
+//   default      -> PageTemplate (atomic best/coaching topics)
+// AEO schemas: Service + BreadcrumbList + Article.
+import Base from '../layouts/Base.astro';
+import PageTemplate from '../components/PageTemplate.astro';
+import ComparisonTemplate from '../components/ComparisonTemplate.astro';
+import { topics } from '../data/topics.js';
+import { buildPageData } from '../lib/page-data.js';
+
+const BUYER_SINGULAR = 'veterinarian-owner';
+
+export async function getStaticPaths() {
+  return topics.map(topic => ({
+    params: { topic: topic.slug },
+    props: { topic },
+  }));
+}
+
+const { topic } = Astro.props;
+if (!topic) return new Response(null, { status: 404 });
+
+const { faq, faqSchema, aboutText } = buildPageData(topic, null, { buyerSingular: BUYER_SINGULAR });
+
+const title = `${topic.label} | Dr. Noah St. John | Neural Performance Architect`;
+const description = topic.desc;
+const canonical = `https://veterinary-practice.noahstjohn.com/${topic.slug}`;
+const buildDate = new Date().toISOString().slice(0, 10);
+
+const isComparison = topic.template === "comparison";
+
+const serviceSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: topic.label,
+  description: topic.desc,
+  serviceType: topic.label,
+  provider: {
+    '@type': 'Person',
+    name: 'Dr. Noah St. John',
+    jobTitle: 'Neural Performance Architect',
+    url: 'https://noahstjohn.com',
+    sameAs: ['https://noahstjohn.com', 'https://booknoah.com'],
+  },
+  areaServed: { '@type': 'Place', name: 'Worldwide' },
+  audience: { '@type': 'Audience', audienceType: BUYER_SINGULAR + 's' },
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://veterinary-practice.noahstjohn.com/' },
+    { '@type': 'ListItem', position: 2, name: topic.label, item: canonical + '/' },
+  ],
+};
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: topic.label,
+  description: topic.desc,
+  author: { '@type': 'Person', name: 'Dr. Noah St. John', url: 'https://noahstjohn.com' },
+  publisher: { '@type': 'Person', name: 'Dr. Noah St. John', url: 'https://noahstjohn.com' },
+  datePublished: '2026-01-01',
+  dateModified: buildDate,
+  mainEntityOfPage: canonical,
+  image: 'https://noahstjohn.com/og-image.jpg',
+};
+
+const extraSchemas = [serviceSchema, breadcrumbSchema, articleSchema];
+---
+<Base title={title} description={description} canonical={canonical} faqSchema={faqSchema} extraSchemas={extraSchemas}>
+  {isComparison
+    ? <ComparisonTemplate topic={topic} faq={faq} aboutText={aboutText} buyerLabel={BUYER_SINGULAR} />
+    : <PageTemplate topic={topic} niche={null} faq={faq} aboutText={aboutText} />
+  }
+</Base>
