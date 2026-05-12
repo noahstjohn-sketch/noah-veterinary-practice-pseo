@@ -11,6 +11,9 @@ import { buildPageData } from '../../lib/page-data.js';
 
 const BUYER_SINGULAR = 'veterinarian-owner';
 
+// Force prerender even when astro.config has output:'server' (legacy SSR sites).
+export const prerender = true;
+
 export async function getStaticPaths() {
   const paths = [];
   for (const topic of topics) {
@@ -63,6 +66,6 @@ const breadcrumbSchema = {
 
 const extraSchemas = [serviceSchema, breadcrumbSchema];
 ---
-<Base title={title} description={description} canonical={canonical} faqSchema={faqSchema} extraSchemas={extraSchemas}>
+<Base title={title} description={description} canonical={canonical} faqSchema={faqSchema} extraSchemas={extraSchemas} ogType="article">
   <PageTemplate topic={topic} niche={niche} faq={faq} aboutText={aboutText} />
 </Base>

@@ -13,6 +13,10 @@ import { buildPageData } from '../lib/page-data.js';
 
 const BUYER_SINGULAR = 'veterinarian-owner';
 
+// Force prerender even when astro.config has output:'server' (legacy SSR sites).
+// Under output:'static' this directive is a harmless no-op.
+export const prerender = true;
+
 export async function getStaticPaths() {
   return topics.map(topic => ({
     params: { topic: topic.slug },
@@ -68,12 +72,12 @@ const articleSchema = {
   datePublished: '2026-01-01',
   dateModified: buildDate,
   mainEntityOfPage: canonical,
-  image: 'https://noahstjohn.com/og-image.jpg',
+  inLanguage: 'en',
 };
 
 const extraSchemas = [serviceSchema, breadcrumbSchema, articleSchema];
 ---
-<Base title={title} description={description} canonical={canonical} faqSchema={faqSchema} extraSchemas={extraSchemas}>
+<Base title={title} description={description} canonical={canonical} faqSchema={faqSchema} extraSchemas={extraSchemas} ogType="article">
   {isComparison
     ? <ComparisonTemplate topic={topic} faq={faq} aboutText={aboutText} buyerLabel={BUYER_SINGULAR} />
     : <PageTemplate topic={topic} niche={null} faq={faq} aboutText={aboutText} />
